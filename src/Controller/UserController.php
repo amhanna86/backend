@@ -2,9 +2,11 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Form\UserType;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
+use FOS\RestBundle\Controller\Annotations\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
@@ -13,16 +15,28 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
  *
  * Class UserController
  * @package App\Controller
+ * @Route("/api")
  */
 class UserController extends AbstractFOSRestController
 {
     /**
-     * @Rest\Get("/api/v1/user")
+     * @Rest\Get("/user")
      * @Rest\View()
      */
-    public function getCurrentUser()
+    public function getCurrentUser(): Response
     {
         $user = $this->getUser();
+        $view = $this->view($user, 200);
+        return $this->handleView($view);
+    }
+
+    /**
+     * @Rest\Get("/users")
+     * @Rest\View()
+     */
+    public function getUsers(): Response
+    {
+        $user = $this->getDoctrine()->getRepository(User::class)->findAll();
         $view = $this->view($user, 200);
         return $this->handleView($view);
     }
@@ -33,7 +47,7 @@ class UserController extends AbstractFOSRestController
      * @param UserPasswordEncoderInterface $passwordEncoder
      * @return Response
      */
-    public function register(Request $request, UserPasswordEncoderInterface $passwordEncoder)
+    public function register(Request $request, UserPasswordEncoderInterface $passwordEncoder): Response
     {
         $form = $this->createForm(UserType::class);
         $form->submit($request->request->all());
